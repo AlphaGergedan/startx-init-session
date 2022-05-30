@@ -4,7 +4,7 @@ all: main #keypress
 	#g++ src/keypress.cpp -lncurses -o keypress
 
 main:
-	g++ src/main.cpp -lncurses -lmenu -o main
+	g++ src/main.cpp -lncurses -lmenu -o startx-init-script
 
 clean:
-	rm ./main #./keypress
+	rm ./startx-init-script #./keypress
