@@ -2,6 +2,7 @@
 #include <string.h>
 #include <spawn.h>
 #include <wait.h>
+#include <string>
 
 #include <curses.h>
 #include <menu.h>
@@ -133,33 +134,48 @@ void print_in_middle(WINDOW *win, int starty, int startx, int width, char *strin
 }
 
 void startx(int choice) {
+  std::string manager;
+
   switch(choice) {
-    case 0:
-      {
-        char session[] = "DESKTOP_SESSION=plasma";
-        putenv(session);
-      }
-    case 1:
-    default:
-      {
-        pid_t pid;
-        char *argv[] = {"ls", (char *) NULL};
-        int status;
-        puts("Testing posix_spawn");
-        fflush(NULL);
-        status = posix_spawn(&pid, "/bin/ls", NULL, NULL, argv, environ);
-        if (status == 0) {
-          printf("Child id: %i\n", pid);
-          fflush(NULL);
-          if (waitpid(pid, &status, 0) != -1) {
-            printf("Child exited with status %i\n", status);
-          } else {
-            perror("waitpid");
-          }
-        } else {
-          printf("posix_spawn: %s\n", strerror(status));
-        }
-        break;
+    case 0: {
+      manager = "dwm";
+      char session[] = "DESKTOP_SESSION=dwm";
+      putenv(session);
+      break;
+    }
+    case 1: {
+      manager = "kde";
+      /* set environment variable */
+      char session[] = "DESKTOP_SESSION=plasma";
+      putenv(session);
+      break;
+    }
+    default: {
+      /* undefined manager */
+      manager = "dwm";
+      char session[] = "DESKTOP_SESSION=dwm";
+      putenv(session);
+      break;
     }
   }
+  pid_t pid;
+  std::string cmd_str = "exec startx ~/.xinitrc " + manager;
+  char* cmd = strcpy(new char[cmd_str.length() + 1], cmd_str.c_str());
+  char *argv[] = {cmd, (char *) NULL};
+  int status;
+  puts("Testing posix_spawn");
+  fflush(NULL);
+  status = posix_spawn(&pid, "/bin/startx", NULL, NULL, argv, environ);
+  if (status == 0) {
+    printf("Child id: %i\n", pid);
+    fflush(NULL);
+    if (waitpid(pid, &status, 0) != -1) {
+      printf("Child exited with status %i\n", status);
+    } else {
+      perror("waitpid");
+    }
+  } else {
+    printf("posix_spawn: %s\n", strerror(status));
+  }
+  delete[] cmd;
 }
