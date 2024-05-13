@@ -1,10 +1,31 @@
-all: main #keypress
+CXX ?= g++
+CXXFLAGS += -Wall -Wextra -Werror -std=c++17
+LDFLAGS += -lncurses -lmenu
 
-#keypress:
-	#g++ src/keypress.cpp -lncurses -o keypress
+SRC_DIR ?= src
+BUILD_DIR ?= build
+BIN_DIR ?= bin
 
-main:
-	g++ src/main.cpp -lncurses -lmenu -o startx-init-script
+SRC := $(SRC_DIR)/main.cc
+OBJ := $(BUILD_DIR)/main.o
+
+TARGET := $(BIN_DIR)/greeter
+
+ifeq ($(CXX), clang++)
+	LDFLAGS += -stdlib=libstdc++
+endif
+
+ifeq ($(DEBUG), yes)
+	CXXFLAGS += -g
+endif
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+	$(CXX) $^ -o $@ $(CXXFLAGS) $(LDFLAGS)
+
+$(OBJ): $(SRC)
+	$(CXX) -c $^ -o $@ $(CXXFLAGS)
 
 clean:
-	rm ./startx-init-script #./keypress
+	rm -f $(BUILD_DIR)/*.o $(BIN_DIR)/*
