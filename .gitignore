@@ -31,5 +31,7 @@
 *.out
 *.app
 
-# build dir
-./build/*
+# build dirs
+build
+bin
+
