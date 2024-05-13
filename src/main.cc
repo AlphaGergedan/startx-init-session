@@ -10,10 +10,36 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define CTRLD 	4
 
-char *choices[] = { "dwm", "kde", (char*) NULL};
+std::string choices[] = { "dwm", "kde", (char*) NULL};
+
 extern char **environ;
 
-void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
+void print_in_middle(WINDOW *win, int starty, int startx, int width, std::string str, chtype color) {
+  int x, y;
+  int temp;
+
+  if(win == NULL)
+    win = stdscr;
+
+  getyx(win, y, x);
+
+  if(startx != 0)
+    x = startx;
+
+  if(starty != 0)
+    y = starty;
+
+  if(width == 0)
+    width = 80;
+
+  temp = (width - str.length()) / 2;
+  x = startx + (int)temp;
+  wattron(win, color);
+  mvwprintw(win, y, x, "%s", str.c_str());
+  wattroff(win, color);
+  refresh();
+}
+
 void startx(int choice);
 
 int main() {
@@ -39,7 +65,7 @@ int main() {
   n_choices = ARRAY_SIZE(choices);
   startx_items = (ITEM **)calloc(n_choices, sizeof(ITEM *));
   for(i = 0; i < n_choices; ++i) {
-    startx_items[i] = new_item(choices[i], NULL);
+    startx_items[i] = new_item(choices[i].c_str(), NULL);
   }
 
   /* Crate menu */
@@ -59,7 +85,8 @@ int main() {
 
   /* Print a border around the main window and print a title */
   box(startx_menu_win, 0, 0);
-  print_in_middle(startx_menu_win, 1, 0, 40, "Select WM/DE", COLOR_PAIR(1));
+  std::string msg = "Select WM/DE";
+  print_in_middle(startx_menu_win, 1, 0, 40, const_cast<char *>(msg.c_str()), COLOR_PAIR(1));
   mvwaddch(startx_menu_win, 2, 0, ACS_LTEE);
   mvwhline(startx_menu_win, 2, 1, ACS_HLINE, 38);
   mvwaddch(startx_menu_win, 2, 39, ACS_RTEE);
@@ -104,33 +131,6 @@ int main() {
   /* startx */
   startx(choice);
   return 0;
-}
-
-void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color) {
-  int length, x, y;
-  float temp;
-
-  if(win == NULL)
-    win = stdscr;
-
-  getyx(win, y, x);
-
-  if(startx != 0)
-    x = startx;
-
-  if(starty != 0)
-    y = starty;
-
-  if(width == 0)
-    width = 80;
-
-  length = strlen(string);
-  temp = (width - length)/ 2;
-  x = startx + (int)temp;
-  wattron(win, color);
-  mvwprintw(win, y, x, "%s", string);
-  wattroff(win, color);
-  refresh();
 }
 
 void startx(int choice) {
